@@ -212,4 +212,3 @@ def keyReleased():
         keypress[2] = False
     elif keyCode == RIGHT:
         keypress[3] = False
- Desktop version
