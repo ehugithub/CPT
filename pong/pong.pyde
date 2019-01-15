@@ -149,7 +149,8 @@ def draw():
     rect(10, left_pos, 15, 200)
     fill(0,0,255)
     rect(1341, right_pos, 15, 200)
-        
+    
+    # collision detection
     if location.x > 1331 and location.y > right_pos and location.y < right_pos + 200 or location.x < 40 and location.y > left_pos and location.y < left_pos + 200:
         if velocity.x > 0:
             velocity.x += 0.25
@@ -159,7 +160,7 @@ def draw():
             velocity.y += 0.25
         elif velocity.y < 0:
             velocity.y -= 0.25
-        velocity.x *= -1
+        velocity.x *= -(random.uniform(0.9, 1.1))
         if location.x > 1331:
             location.x = 1331
         else:
