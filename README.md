@@ -1,2 +1,2 @@
 # CPT
-Pong game
+A pong game
