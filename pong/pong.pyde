@@ -12,13 +12,15 @@ left = rightscore = 0
 difficulty = 0
 left_pos = right_pos = 300.0
 new_game = button = display_rules = True
-single_player = no_players = scoreboard = False
+single_player = no_players = scoreboard = typing = False
+scores = {}
+name = ""
 
 
 #displays the rules and allows user to choose game modes
 def start_game():
     global new_game, single_player, difficulty, leftscore, rightscore
-    global no_players, button, display_rules, scoreboard
+    global no_players, button, display_rules, scoreboard, scores
     leftscore = rightscore = 0
     strokeCap(ROUND)
     strokeWeight(10)
@@ -52,8 +54,7 @@ def start_game():
         text('Scoreboard', 600, 640)
         textSize(100)
         text('Select Mode', 350, 300)
-
-        if mousePressed and button and 470> mouseY > 370 and 340> mouseX > 40:
+        if mousePressed and button and 470> mouseY > 370 and 340 > mouseX > 40:
             single_player = True
             button = False
             background(255)
@@ -75,24 +76,35 @@ def start_game():
         fill(0)
         textSize(40)
         text('Back', 200, 660)
+        text('Name', 100, 100)
+        text('Difficulty level', 800, 100)
+        i = 200
+        for names in scores:
+            text(names, 100, i)
+            i += 100
+        z = 200
+        for value in scores.values():
+            text(value, 800, z)
+            z += 100
         if mousePressed and button and 700 > mouseY > 600 and 400 > mouseX > 100:
             button = scoreboard = False
     #if the single player mode was chosen, display the difficulty level of the bot
     if single_player:
-        fill(0)
-        textSize(100)
-        text('Select Difficulty', 350, 300)
         fill(128)
         rect(40, 370, 300, 100)
+        rect(40, 570, 300, 100)
         rect(540, 370, 300, 100)
         rect(1040, 370, 300, 100)
         rect(540, 570, 300, 100)
-        textSize(40)
         fill(0)
+        textSize(100)
+        text('Select Difficulty', 350, 300)
+        textSize(40)
         text('Easy', 140, 420)
         text('Medium', 600, 420)
         text('Hard', 1140, 420)
         text('Impossible', 580, 630)
+        text('Back', 140, 620)
         if mousePressed and button and 470 > mouseY > 370 and 340 > mouseX > 40:
             difficulty = 1
             new_game = button = False
@@ -109,18 +121,20 @@ def start_game():
             difficulty = 10
             new_game = button = False
             velocity.set([10.0, 10.0])
-
+        elif mousePressed and button and 670 > mouseY > 570 and 340 > mouseX > 40:
+            button = single_player = False
 
 def score_point():
     global location
     location = PVector(width / 2, height / 2)
-    velocity.x = 10.0
-    velocity.y = 10.0
+    velocity.x = 50.0
+    velocity.y = 50.0
     delay(300)
 
 
 def draw():
-    global left_pos, right_pos, leftscore, rightscore, difficulty, single_player, new_game, button
+    global left_pos, right_pos, leftscore, rightscore, difficulty
+    global name, single_player, new_game, button, scores, typing
     frameRate(100)
     background(255)
 
@@ -138,12 +152,24 @@ def draw():
             new_game = True
     elif rightscore == 10:
         fill(0, 0, 255)
-        textSize(80)
-        text('Blue wins! Click to play again', 150, 330)
+        textSize(40)
+        if not single_player:
+            text('Blue wins! Click to play again', 150, 330)
+        else:
+            typing = True
+            fill(0)
+            text('Congratulations!', 550, 300)
+            text('Please enter a name to be added to the scoreboard:', 250, 400)
+            text('Click anywhere when done', 450, 500)
+            text(name, 500, 600)
+            if mousePressed and button:
+                button = typing = single_player = False
+                scores.update({name:difficulty})
+                name = ""
+                new_game = True
         velocity.set([0.0, 0.0])
-        single_player = False
         if mousePressed and button:
-            button = False
+            button = single_player = False
             new_game = True
 
     if velocity.x != 0:
@@ -222,13 +248,13 @@ def draw():
             elif location.y < right_pos + 150:
                 right_pos -= 10
 
-
 def mouseReleased():
     global button
     button = True
 
 
 def keyPressed():
+    global name, typing, score
     if key == 'a':
         keypress[0] = True
     elif key == 'd':
@@ -237,6 +263,8 @@ def keyPressed():
         keypress[2] = True
     elif keyCode == RIGHT:
         keypress[3] = True
+    if key == ' ':
+        name += ' '
 
 
 def keyReleased():
@@ -248,3 +276,12 @@ def keyReleased():
         keypress[2] = False
     elif keyCode == RIGHT:
         keypress[3] = False
+
+
+def keyTyped():
+    global name, typing
+    if typing:
+        if key == BACKSPACE:
+            name = name[:-1]
+        else:
+            name += key
