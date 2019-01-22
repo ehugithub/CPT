@@ -1,23 +1,26 @@
 import random
+add_library('sound')
 
 
 def setup():
+    global sf
+    sf = SoundFile(this, "ball_hitting_sound.wav")
     size(1366, 700)
     background(255)
 
 location = PVector(683.0, 350.0)
 velocity = PVector(0.0, 0.0)
 keypress = [False] * 4
-left = rightscore = 0
+leftscore = rightscore = 0
 difficulty = 0
-left_pos = right_pos = 300.0
+left_pos = right_pos = 300
 new_game = button = display_rules = True
 single_player = no_players = scoreboard = typing = False
 scores = {}
 name = ""
 
 
-#displays the rules and allows user to choose game modes
+# runs at the start and when a game is finished
 def start_game():
     global new_game, single_player, difficulty, leftscore, rightscore
     global no_players, button, display_rules, scoreboard, scores
@@ -26,6 +29,7 @@ def start_game():
     strokeWeight(10)
     stroke(0)
     background(255)
+    # displays the rules at the very start
     if display_rules:
         fill(128)
         rect(300, 50, 900, 500)
@@ -40,6 +44,7 @@ def start_game():
         if mousePressed:
             button = False
             display_rules = False
+    # the main menu
     if not single_player and not display_rules and not scoreboard:
         fill(128)
         rect(40, 370, 300, 100)
@@ -54,12 +59,13 @@ def start_game():
         text('Scoreboard', 600, 640)
         textSize(100)
         text('Select Mode', 350, 300)
-        if mousePressed and button and 470> mouseY > 370 and 340 > mouseX > 40:
+
+        if mousePressed and button and 470 > mouseY > 370 and 340 > mouseX > 40:
             single_player = True
             button = False
             background(255)
             delay(10)
-        elif mousePressed and button and 470> mouseY > 370 and 840 > mouseX > 540:
+        elif mousePressed and button and 470 > mouseY > 370 and 840 > mouseX > 540:
             new_game = button = False
             velocity.set([10.0, 10.0])
         elif mousePressed and button and 670 > mouseY > 570 and 840 > mouseX > 540:
@@ -69,6 +75,7 @@ def start_game():
             no_players = True
             new_game = button = False
             velocity.set([10.0, 10.0])
+    # displays the scoreboard
     if scoreboard:
         background(255)
         fill(128)
@@ -76,20 +83,34 @@ def start_game():
         fill(0)
         textSize(40)
         text('Back', 200, 660)
-        text('Name', 100, 100)
-        text('Difficulty level', 800, 100)
-        i = 200
-        for names in scores:
-            text(names, 100, i)
-            i += 100
-        z = 200
+        if not scores:
+            text('Looks like there is no one on the scoreboard yet!', 100, 100)
+            text('Win against the computer on any difficulty', 100, 200)
+            text('level to be added to the scoreboard!', 100, 300)
+        else:
+            text('Name', 100, 100)
+            text('Difficulty level', 800, 100)
+            
+        difficulty_loc = 200
         for value in scores.values():
-            text(value, 800, z)
-            z += 100
+            if value == 1:
+                text('Easy', 800, difficulty_loc)
+            elif value == 2:
+                text('Medium', 800, difficulty_loc)
+            elif value == 3:
+                text('Hard', 800, difficulty_loc)
+            elif value == 10:
+                text('Impossible', 800, difficulty_loc)
+            difficulty_loc += 100
+        names_loc = 200
+        for names in scores:
+            text(names, 100, names_loc)
+            names_loc += 100
         if mousePressed and button and 700 > mouseY > 600 and 400 > mouseX > 100:
             button = scoreboard = False
-    #if the single player mode was chosen, display the difficulty level of the bot
+    # if the single player mode was chosen, gives the option of choosing between 4 difficulties
     if single_player:
+        assert not scoreboard
         fill(128)
         rect(40, 370, 300, 100)
         rect(40, 570, 300, 100)
@@ -124,11 +145,12 @@ def start_game():
         elif mousePressed and button and 670 > mouseY > 570 and 340 > mouseX > 40:
             button = single_player = False
 
+
 def score_point():
     global location
     location = PVector(width / 2, height / 2)
-    velocity.x = 50.0
-    velocity.y = 50.0
+    velocity.x = 10.0
+    velocity.y = 10.0
     delay(300)
 
 
@@ -140,7 +162,10 @@ def draw():
 
     if new_game:
         start_game()
-
+    
+    ''' when one sides reaches 10 points, bring user back to the main menu
+    if single player mode was on, then the player is promted to insert
+    a name to be entered into the scoreboard'''
     if leftscore == 10:
         fill(255, 0, 0)
         textSize(80)
@@ -158,13 +183,13 @@ def draw():
         else:
             typing = True
             fill(0)
-            text('Congratulations!', 550, 300)
-            text('Please enter a name to be added to the scoreboard:', 250, 400)
-            text('Click anywhere when done', 450, 500)
-            text(name, 500, 600)
+            text('Congratulations!', 550, 100)
+            text('Please enter a name to be added to the scoreboard:', 250, 200)
+            text('Click anywhere when done', 450, 400)
+            text(name, 500, 300)
             if mousePressed and button:
                 button = typing = single_player = False
-                scores.update({name:difficulty})
+                scores.update({name: difficulty})
                 name = ""
                 new_game = True
         velocity.set([0.0, 0.0])
@@ -177,11 +202,13 @@ def draw():
         textSize(150)
         text('{}     {}'.format(leftscore, rightscore), 450, 200)
         noStroke()
-        #ball
+        # draws the ball
         ellipse(location.x, location.y, 40, 40)
+
+    # allows ball to move
     location.add(velocity)
 
-    #prevents paddles from going off screen
+    # prevents paddles from going off screen
     left_pos = constrain(left_pos, 0, 500)
     right_pos = constrain(right_pos, 0, 500)
 
@@ -196,7 +223,7 @@ def draw():
         score_point()
         left_pos = right_pos = 300
 
-    #Paddles
+    # Paddles
     noStroke()
     fill(255, 0, 0)
     rect(10, left_pos, 15, 200)
@@ -205,7 +232,8 @@ def draw():
 
     # collision detection
     if location.x > 1331 and location.y > right_pos and location.y < right_pos + 200 or location.x < 40 and location.y > left_pos and location.y < left_pos + 200:
-        #makes ball go faster
+        sf.play()
+        # makes ball go faster as game progresses
         if velocity.x > 0:
             velocity.x += 0.25
         elif velocity.x < 0:
@@ -214,13 +242,14 @@ def draw():
             velocity.y += 0.25
         elif velocity.y < 0:
             velocity.y -= 0.25
+        # makes ball more random when bouncing off a paddle
         velocity.x *= -(random.uniform(0.9, 1.1))
         if location.x > 1331:
             location.x = 1331
         else:
             location.x = 40
 
-    #controls paddle movement
+    # controls paddle movement
     if keypress[0]:
         left_pos -= 10
     if keypress[1]:
@@ -230,6 +259,7 @@ def draw():
     if keypress[3]:
         right_pos += 10
 
+    #determine the speed of the bot's paddle based on difficulty level
     if single_player:
         if location.y > left_pos + 150:
             left_pos += difficulty * 5
@@ -247,6 +277,7 @@ def draw():
                 right_pos += 10
             elif location.y < right_pos + 150:
                 right_pos -= 10
+
 
 def mouseReleased():
     global button
