@@ -1,10 +1,7 @@
 import random
-add_library('sound')
 
 
 def setup():
-    global sf
-    sf = SoundFile(this, "ball_hitting_sound.wav")
     size(1366, 700)
     background(255)
 
@@ -232,7 +229,6 @@ def draw():
 
     # collision detection
     if location.x > 1331 and location.y > right_pos and location.y < right_pos + 200 or location.x < 40 and location.y > left_pos and location.y < left_pos + 200:
-        sf.play()
         # makes ball go faster as game progresses
         if velocity.x > 0:
             velocity.x += 0.25
